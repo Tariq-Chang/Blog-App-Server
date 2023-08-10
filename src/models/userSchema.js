@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
-    user: {
+    username: {
         type: String,
         required: true,
         unique: true,
@@ -18,8 +18,6 @@ const userSchema = mongoose.Schema({
         required: true,
         unique: true,
         trim: true,
-        min: 8,
-        max: 15,
     },
     profile: {
         username: {
@@ -43,11 +41,11 @@ const userSchema = mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Comment'
     },
-    role: {
-        type: string,
-        enum: ['user' | 'admin'],
-        default: 'user'
-    }
+    // role: {
+    //     type: String,
+    //     enum: ['user' | 'admin'],
+    //     default: 'user'
+    // }
 })
 
 const User = mongoose.model('user',userSchema);
