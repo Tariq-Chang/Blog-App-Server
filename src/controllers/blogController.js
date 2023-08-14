@@ -71,7 +71,31 @@ const deleteBlog = async (req, res) => {
 }
 
 // ********************************** UPDATE BLOG ****************************************
-const updateBlog = (req, res) => {
-    const { title, content } = req.body;
+const updateBlog = async(req, res) => {
+    const { title, content, thumbnail } = req.body;
+    const {id} = req.params;
+    try {
+        const blog = await Blog.findOne({_id:id});
+        
+        
+        if(!blog){
+            return res.status(400).json({ message: "Blog does not exist" });
+        }
+        // Check if the logged in user is an author of this blog and delete it
+        if (blog.author.toString() !== req.user._id.toString() && !req.user.role.includes('admin')) {
+            return res.status(403).json({ message: `${req.user.email} do not have permissions for this operation` })
+        }
+        
+        let newBlog = {
+            title,
+            content,
+            thumbnail: thumbnail && thumbnail 
+        }
+
+        await Blog.findByIdAndUpdate(id, newBlog, {new:true})
+        res.status(200).json({success:"Blog updated successfully"})
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
 }
-module.exports = { getUserBlogs, createBlog, deleteBlog }
+module.exports = { getUserBlogs, createBlog, deleteBlog, updateBlog }
