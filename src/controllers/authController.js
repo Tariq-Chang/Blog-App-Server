@@ -42,7 +42,7 @@ const authController = {
             
             const hashPassword = await bcrypt.hash(password, 10);
             
-            const user = new User({
+            const user = await User.create({
                 username,
                 email,
                 password: hashPassword,
@@ -50,12 +50,10 @@ const authController = {
                     username,
                 },
             })
-            await user.save();
             res.status(201).json({ success: "User created successfully", user })
         } catch (error) {
-            res.status(400).json({ error })
+            res.status(500).json({ error })
         }
-
     }
 }
 

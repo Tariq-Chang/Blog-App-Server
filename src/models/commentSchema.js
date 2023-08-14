@@ -5,14 +5,14 @@ const commentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    author: {
-        type: mongoose.Schema.ObjectId,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
     blog: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Blog'
-    }
+    },
 }, {timestamps: true})
 
 const Comment = mongoose.model('comment',commentSchema)

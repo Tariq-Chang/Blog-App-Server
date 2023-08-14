@@ -4,7 +4,6 @@ const userSchema = mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
     },
     email: {
@@ -16,14 +15,9 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
     },
     profile: {
-        username: {
-            type: String,
-            default: ''
-        },
         bio: {
             type: String,
             default: ''
@@ -33,19 +27,11 @@ const userSchema = mongoose.Schema({
             default: 'https://www.w3schools.com/w3images/avatar2.png'
         }
     },
-    blogs: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Blog'
+    role: {
+        type:[String],
+        enum: ['user','admin','author'],
+        default: () => ['user']
     },
-    comments: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Comment'
-    },
-    // role: {
-    //     type: String,
-    //     enum: ['user' | 'admin'],
-    //     default: 'user'
-    // }
 })
 
 const User = mongoose.model('user',userSchema);

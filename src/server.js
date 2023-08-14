@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const authRoutes = require('./routes/authRoutes')
+const blogRoutes = require('./routes/blogRoutes');
 const intializePassport = require('./config/passport');
 
 require('dotenv').config();
@@ -16,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/v1/auth', authRoutes);
-
+app.use('/api/v1/blogs',passport.authenticate('jwt', {session:false}), blogRoutes);
 app.get('/api/v1',passport.authenticate('jwt', {session: false}), (req,res) => {
     res.send("Homepage");
 })
@@ -24,7 +25,6 @@ app.get('/api/v1',passport.authenticate('jwt', {session: false}), (req,res) => {
 app.get('*', (req, res) => {
     res.redirect('/api/v1')
 })
-
 
 
 const PORT = process.env.PORT || 4000;
