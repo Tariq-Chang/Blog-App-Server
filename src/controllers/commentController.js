@@ -23,24 +23,29 @@ const addComment = async (req, res) => {
 const deleteComment = async (req, res) => {
     const commentId = req.params.commentId;
     const blogId = req.params.blogId;
-    
-    const comment = await Comment.findOne({_id:commentId});
-        console.log(comment);
 
-        if(!comment){
-            res.status(400).json({message:"Comment does not exist"})
-        }
+    const comment = await Comment.findOne({ _id: commentId });
+    console.log(comment);
+
+    if (!comment) {
+        res.status(400).json({ message: "Comment does not exist" })
+    }
+
     // Check if the logged in user is an author of this blog and delete it
     if (comment.user.toString() !== req.user._id.toString() && !req.user.role.includes('admin')) {
         return res.status(403).json({ message: `${req.user.email} do not have permissions for this operation` })
     }
 
     try {
-        // const blog = await Blog.find({_id:blogId}).populate('comments');
-
-        // const deleteFromBlog = await Blog.findByIdDelete({_id:blog.comments._id});
         const deletedComment = await Comment.findByIdAndDelete(commentId);
-        return res.status(203).json({ success: "Comment deleted successfully", deletedComment});
+
+        const updatedBlog = await Blog.findByIdAndUpdate(
+            blogId,
+            { $pull: { comments: commentId } }, // Remove the commentId from the comments array
+            { new: true }
+        ).populate('comments');
+
+        return res.status(203).json({ success: "Comment deleted successfully", deletedComment });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
