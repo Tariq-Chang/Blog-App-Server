@@ -5,7 +5,7 @@ const User = require("../models/userSchema");
 const getUserBlogs = async (req, res) => {
     try {
         // get all blogs for perticular user
-        const blogs = await Blog.find({ author: req.user.id });
+        const blogs = await Blog.find({ author: req.user.id }).populate('comments');
         res.status(200).json(blogs);
     } catch (error) {
         res.status(400).json({ error: error.message })
