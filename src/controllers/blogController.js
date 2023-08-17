@@ -98,4 +98,17 @@ const updateBlog = async(req, res) => {
         res.status(500).json({error: error.message})
     }
 }
-module.exports = { getUserBlogs, createBlog, deleteBlog, updateBlog }
+
+// **************************** SEARCH BLOG ******************************************
+const searchBlogByTitle = async(req, res) => {
+    const title = req.query.title;
+    
+    const blogs = await Blog.find({title: {$regex: title, $options: "i"}});
+    if(!blogs){
+        res.status(400).json({message:"Blogs do not exist"})
+    }
+
+    res.status(200).json({result: blogs})
+}
+
+module.exports = { getUserBlogs, createBlog, deleteBlog, updateBlog, searchBlogByTitle }
