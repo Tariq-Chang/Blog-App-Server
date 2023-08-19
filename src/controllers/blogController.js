@@ -24,6 +24,7 @@ const createBlog = async (req, res) => {
             title,
             content,
             author: req.user._id,
+            
         });
 
         await blog.save();
@@ -111,4 +112,8 @@ const searchBlogByTitle = async(req, res) => {
     res.status(200).json({result: blogs})
 }
 
-module.exports = { getUserBlogs, createBlog, deleteBlog, updateBlog, searchBlogByTitle }
+// **************************** UPLOAD PROFILE PHOTO *********************************
+const uploadProfilePicture = (req, res) => {
+    res.status(200).json({success:"File uploaded successfully", file:req.file})
+}
+module.exports = { getUserBlogs, createBlog, deleteBlog, updateBlog, searchBlogByTitle, uploadProfilePicture }

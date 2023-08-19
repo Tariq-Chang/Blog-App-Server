@@ -41,13 +41,14 @@ const authController = {
             if (userExist) return res.status(400).json({ message: "User already exists" })
             
             const hashPassword = await bcrypt.hash(password, 10);
-            
+            console.log(req.file);
             const user = await User.create({
                 username,
                 email,
                 password: hashPassword,
                 profile: {
                     username,
+                    avatar: req.file && req.file.path,
                 },
             })
             res.status(201).json({ success: "User created successfully", user })
