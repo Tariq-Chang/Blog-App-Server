@@ -23,7 +23,7 @@ const authController = {
                 }
 
                 const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: 24*60*60});
-                res.status(200).json({success:"Successfully logged in", token: `Bearer ${token}`})
+                return res.status(200).json({success:"Successfully logged in", user:user,token: `Bearer ${token}`})
             }
         } catch (error) {
             res.status(401).json({message: "Invalid credentials"})
