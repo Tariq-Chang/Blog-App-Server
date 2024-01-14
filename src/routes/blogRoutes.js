@@ -11,8 +11,8 @@ router.post('/create',upload.single('profile'), createBlog);
 router.delete('/delete/:id', isAuthorizedUser(['admin', 'author']), deleteBlog)
 router.put('/update/:id', isAuthorizedUser(['admin', 'author']), updateBlog)
 router.post('/:blogId/comment/add', addComment);
-router.delete('/:blogId/comment/delete/:commentId',isAuthorizedUser(['admin', 'author']), deleteComment);
-router.put('/comment/update/:commentId',isAuthorizedUser(['admin', 'author']), updateComment);
+router.delete('/:blogId/comment/:commentId/delete',isAuthorizedUser(['admin', 'author']), deleteComment);
+router.put('/comment/:commentId/update',isAuthorizedUser(['admin', 'author']), updateComment);
 router.get('/search', searchBlogByTitle)
 
 module.exports = router;
