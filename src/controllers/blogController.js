@@ -12,6 +12,15 @@ const getUserBlogs = async (req, res) => {
   }
 };
 
+// *************************** GET ALL BLOGS ********************************************
+const getAllBlogs = async (req, res) => {
+  try{
+    const blogs = await Blog.find().populate("comments");
+    res.status(200).json(blogs);
+  }catch(error){
+    res.status(400).json({error: error.message})
+  }
+}
 // *************************** CREATE BLOG **********************************************
 const createBlog = async (req, res) => {
   const { title, content } = req.body;
@@ -143,4 +152,5 @@ module.exports = {
   updateBlog,
   searchBlogByTitle,
   uploadProfilePicture,
+  getAllBlogs
 };
