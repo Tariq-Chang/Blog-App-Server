@@ -1,6 +1,7 @@
+const cloudinary = require("../config/cloudinary");
 const Blog = require("../models/blogSchema");
 const User = require("../models/userSchema");
-
+const fs = require('fs');
 // *************************** GET ALL USER BLOGS ********************************************
 const getUserBlogs = async (req, res) => {
   try {
@@ -134,16 +135,28 @@ const searchBlogByTitle = async (req, res) => {
 
 // **************************** UPLOAD PROFILE PHOTO *********************************
 const uploadProfilePicture = async (req, res) => {
-  console.log(req);
+  
   try {
-    req.user.profile.avatar = req.file.path;
-    await User.updateOne({_id:req.user.id}, req.user);
+    if (!req.file.path) return res.status(400).json({message:"File not selected"});
+
+    // upload the file on cloudinary
+    const response = await cloudinary.uploader.upload(req.file.path, {
+        resource_type:"auto"
+    });
+
+    // Update the user's profile avatar field with the Cloudinary URL
+    const updatedUser = await User.findByIdAndUpdate(req.user._id,  {"profile.avatar": response.url});
+
+    // Delete local file on the server
+    fs.unlinkSync(req.file.path);
+
+    // file uploaded successfully
+    return res.status(200).json({message:"profile image uploaded successfully",user: updatedUser})
   } catch (error) {
-    console.log(error);
+    // delete local file on the server
+    fs.unlinkSync(req.file.path);
+    return res.status(404).json({error:"File deleted from the server"})
   }
-  res
-    .status(200)
-    .json({ success: "File uploaded successfully", file: req.file });
 };
 module.exports = {
   getUserBlogs,
