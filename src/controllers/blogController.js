@@ -141,17 +141,18 @@ const uploadProfilePicture = async (req, res) => {
 
     // upload the file on cloudinary
     const response = await cloudinary.uploader.upload(req.file.path, {
-        resource_type:"auto"
+        resource_type:"auto",
+        folder:"images"
     });
 
     // Update the user's profile avatar field with the Cloudinary URL
-    const updatedUser = await User.findByIdAndUpdate(req.user._id,  {"profile.avatar": response.url});
+    await User.findByIdAndUpdate(req.user._id,  {"profile.avatar": response.url + `?${Date.now()}`});
 
     // Delete local file on the server
     fs.unlinkSync(req.file.path);
 
     // file uploaded successfully
-    return res.status(200).json({message:"profile image uploaded successfully",user: updatedUser})
+    return res.status(200).json({message:"profile image uploaded successfully",img_url: response.url})
   } catch (error) {
     // delete local file on the server
     fs.unlinkSync(req.file.path);
