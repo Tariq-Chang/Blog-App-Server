@@ -124,13 +124,16 @@ const updateBlog = async (req, res) => {
 // **************************** SEARCH BLOG ******************************************
 const searchBlogByTitle = async (req, res) => {
   const title = req.query.title;
-
-  const blogs = await Blog.find({ title: { $regex: title, $options: "i" } });
-  if (!blogs) {
-    res.status(400).json({ message: "Blogs do not exist" });
+  try{
+    const blogs = await Blog.find({ title: { $regex: title, $options: "i" } });
+    if (!blogs) {
+      res.status(400).json({ message: "Blogs do not exist" });
+    }
+  
+    res.status(200).json({ result: blogs });
+  }catch(error){
+    res.status(500).json({error: error.message})
   }
-
-  res.status(200).json({ result: blogs });
 };
 
 // **************************** UPLOAD PROFILE PHOTO *********************************
@@ -159,6 +162,20 @@ const uploadProfilePicture = async (req, res) => {
     return res.status(404).json({error:"File deleted from the server"})
   }
 };
+
+// **************************** UPDATE PROFILE INFO *********************************
+const updateUserInfo = async(req, res) => {
+  const {username, bio} = req.body;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, {"username": username, "profile.bio": bio}, {new: true});
+    res.status(200).json({ success: "User updated successfully", updatedUser });
+  } catch (error) {
+    res.status(500).json({error: error.message})
+  }
+}
+
+
 module.exports = {
   getUserBlogs,
   createBlog,
@@ -166,5 +183,6 @@ module.exports = {
   updateBlog,
   searchBlogByTitle,
   uploadProfilePicture,
-  getAllBlogs
+  getAllBlogs,
+  updateUserInfo
 };
