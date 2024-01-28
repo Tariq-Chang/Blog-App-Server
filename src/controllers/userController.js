@@ -8,7 +8,7 @@ const getUserById = async(req, res) => {
     }
 
     try {
-        const user = await User.find({_id: userId});
+        const user = await User.findOne({_id: userId});
         return res.status(200).json({user})
     } catch (error) {
         return res.status(500).json({message: "Failed to get the user"})
