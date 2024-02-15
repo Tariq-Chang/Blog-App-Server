@@ -175,6 +175,112 @@ const updateUserInfo = async(req, res) => {
   }
 }
 
+// **************************** UPDATE PROFILE INFO *********************************
+const addBlogThumbnail = async(req, res) => {
+  const {id} = req.params;
+  try {
+
+    const blog = await Blog.findOne({_id: id});
+
+    if(!blog){
+      res.status(404).json("Blog not found");
+    }
+
+     // Check if the logged in user is an author of this blog and delete it
+     if (
+      blog.author.toString() !== req.user._id.toString() &&
+      !req.user.role.includes("admin")
+    ) {
+      return res
+        .status(403)
+        .json({
+          message: `${req.user.email} do not have permissions for this operation`,
+        });
+    }
+    
+    if (!req.file.path) return res.status(400).json({message:"File not selected"});
+
+    // upload the file on cloudinary
+    const response = await cloudinary.uploader.upload(req.file.path, {
+        resource_type:"auto",
+        folder:"thumbnails"
+    });
+
+    // Update the user's profile avatar field with the Cloudinary URL
+    await Blog.findByIdAndUpdate({_id: id},  {"thumbnail": response.url + `?${Date.now()}`});
+
+    // Delete local file on the server
+    fs.unlinkSync(req.file.path);
+
+    // file uploaded successfully
+    return res.status(200).json({message:"thumbnail image uploaded successfully",img_url: response.url})
+  } catch (error) {
+    // delete local file on the server
+    fs.unlinkSync(req.file.path);
+    return res.status(404).json({error:"File deleted from the server"})
+  }
+}
+
+// **************************** UPDATE PROFILE INFO *********************************
+const uploadCloudinaryImages = async(file) => {
+  return new Promise(async(resolve, reject) => {
+    try{
+      const response = await cloudinary.uploader.upload(file.path, {
+        resource_type:"auto",
+        folder:"BlogImages"
+      });
+      resolve(response.secure_url);
+    }catch(error){
+      reject(error);
+    }
+  })
+}
+
+const addBlogImages = async (req, res) => {
+  const {id} = req.params;
+  try {
+    const blog = await Blog.findOne({_id: id});
+
+    if(!blog){
+      return res.status(404).json("Blog not found");
+    }
+
+     // Check if the logged in user is an author of this blog and delete it
+     if (
+      blog.author.toString() !== req.user._id.toString() &&
+      !req.user.role.includes("admin")
+    ) {
+      return res
+        .status(403)
+        .json({
+          message: `${req.user.email} do not have permissions for this operation`,
+        });
+    }
+
+    if (req.files.length < 0) return res.status(400).json({ message: "File not selected" });
+    const files = req.files;
+    const imageUrls = []
+  
+    for (const file of files) {
+      const imageUrl = await uploadCloudinaryImages(file)
+      imageUrls.push(imageUrl);
+      try {
+        const updatedBlog = await Blog.findByIdAndUpdate({_id:id}, { $push: {"images": imageUrl + `?${Date.now()}` } });
+      } catch (error) {
+        // delete local file on the server
+        fs.unlinkSync(req.file.path);
+        return res.status(404).json({ error: "File deleted from the server" })
+      }
+      // Delete local file on the server
+      fs.unlinkSync(file.path);
+    }
+    // file uploaded successfully
+    return res.status(200).json({ message: "image(s) uploaded successfully", img_urls: imageUrls })
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+
+}
 
 module.exports = {
   getUserBlogs,
@@ -184,5 +290,7 @@ module.exports = {
   searchBlogByTitle,
   uploadProfilePicture,
   getAllBlogs,
-  updateUserInfo
+  addBlogThumbnail,
+  updateUserInfo,
+  addBlogImages
 };
