@@ -24,7 +24,7 @@ const getAllBlogs = async (req, res) => {
 }
 // *************************** CREATE BLOG **********************************************
 const createBlog = async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, thumbnail } = req.body;
   if (!(title && content)) {
     return res.status(404).json({ message: "All fields are required" });
   }
@@ -33,6 +33,7 @@ const createBlog = async (req, res) => {
     const blog = new Blog({
       title,
       content,
+      thumbnail,
       author: req.user._id,
     });
 
@@ -177,26 +178,7 @@ const updateUserInfo = async(req, res) => {
 
 // **************************** UPDATE PROFILE INFO *********************************
 const addBlogThumbnail = async(req, res) => {
-  const {id} = req.params;
   try {
-
-    const blog = await Blog.findOne({_id: id});
-
-    if(!blog){
-      res.status(404).json("Blog not found");
-    }
-
-     // Check if the logged in user is an author of this blog and delete it
-     if (
-      blog.author.toString() !== req.user._id.toString() &&
-      !req.user.role.includes("admin")
-    ) {
-      return res
-        .status(403)
-        .json({
-          message: `${req.user.email} do not have permissions for this operation`,
-        });
-    }
     
     if (!req.file.path) return res.status(400).json({message:"File not selected"});
 
@@ -207,7 +189,7 @@ const addBlogThumbnail = async(req, res) => {
     });
 
     // Update the user's profile avatar field with the Cloudinary URL
-    await Blog.findByIdAndUpdate({_id: id},  {"thumbnail": response.url + `?${Date.now()}`});
+    await Blog.findByIdAndUpdate(req.user._id,  {"thumbnail": response.url + `?${Date.now()}`});
 
     // Delete local file on the server
     fs.unlinkSync(req.file.path);

@@ -16,7 +16,7 @@ router.delete('/:blogId/comment/:commentId/delete',isAuthorizedUser(['admin', 'a
 router.put('/comment/:commentId/update',isAuthorizedUser(['admin', 'author']), updateComment);
 router.get('/search', searchBlogByTitle)
 router.put('/updateUserInfo',updateUserInfo);
-router.post('/addBlogThumbnail/:id',isAuthorizedUser(['admin', 'author']), upload.single('thumbnail'), addBlogThumbnail);
+router.post('/addBlogThumbnail',isAuthorizedUser(['admin', 'author']), upload.single('thumbnail'), addBlogThumbnail);
 router.post('/addBlogImages/:id',isAuthorizedUser(['admin', 'author']), upload.array('blogImages', 3), addBlogImages);
 
 module.exports = router;
