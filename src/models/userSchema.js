@@ -32,6 +32,10 @@ const userSchema = mongoose.Schema({
         enum: ['user','admin','author'],
         default: () => ['user']
     },
+    savedBlogs: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Blog'
+    },
 }, {timestamps: true})
 
 const User = mongoose.model('user',userSchema);

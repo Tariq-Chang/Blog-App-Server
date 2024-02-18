@@ -1,6 +1,6 @@
 const express = require('express');
 const { isAuthorizedUser } = require('../middleware/auth');
-const {deleteBlog, createBlog, getUserBlogs, updateBlog, searchBlogByTitle, getAllBlogs, updateUserInfo, addBlogThumbnail, addBlogImages } = require('../controllers/blogController');
+const {deleteBlog, createBlog, getUserBlogs, updateBlog, searchBlogByTitle, getAllBlogs, updateUserInfo, addBlogThumbnail, addBlogImages, saveBlog } = require('../controllers/blogController');
 const { addComment, deleteComment, updateComment } = require('../controllers/commentController');
 const upload = require('../middleware/upload');
 
@@ -18,5 +18,6 @@ router.get('/search', searchBlogByTitle)
 router.put('/updateUserInfo',updateUserInfo);
 router.post('/addBlogThumbnail',isAuthorizedUser(['admin', 'author']), upload.single('thumbnail'), addBlogThumbnail);
 router.post('/addBlogImages/:id',isAuthorizedUser(['admin', 'author']), upload.array('blogImages', 3), addBlogImages);
+router.put('/saveBlog/:id', saveBlog)
 
 module.exports = router;

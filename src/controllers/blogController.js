@@ -261,7 +261,23 @@ const addBlogImages = async (req, res) => {
   } catch (error) {
     return res.status(500).json(error);
   }
+}
 
+const saveBlog = async(req, res) => {
+  const {id} = req.params;
+  const blogId = req.body.blogId;
+
+  if(!id){
+    return res.status(404).json("id is required")
+  }
+  
+  const blog = await Blog.findOne({_id: blogId});
+
+  if(!blog){
+    return res.status(404).json("blog does not exist");
+  }
+  const updatedUser = await User.findByIdAndUpdate({_id: id}, {$push: {'savedBlogs': blog}}, {new: true})
+  res.status(200).json({message: "Blog saved successfully", user: updatedUser});
 }
 
 module.exports = {
@@ -274,5 +290,6 @@ module.exports = {
   getAllBlogs,
   addBlogThumbnail,
   updateUserInfo,
-  addBlogImages
+  addBlogImages,
+  saveBlog,
 };
