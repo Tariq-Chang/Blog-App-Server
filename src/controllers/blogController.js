@@ -280,6 +280,15 @@ const saveBlog = async(req, res) => {
   res.status(200).json({message: "Blog saved successfully", user: updatedUser});
 }
 
+const getSavedBlogs = async(req, res) => {
+  const savedBlogs = await User.find({_id: req.user._id}, "savedBlogs").populate('savedBlogs');
+  console.log(savedBlogs.savedBlogs);
+  if(!savedBlogs.length > 0){
+      return res.status(404).json("There is no saved blog");
+  }
+  return res.status(200).json(savedBlogs)
+}
+
 module.exports = {
   getUserBlogs,
   createBlog,
@@ -292,4 +301,5 @@ module.exports = {
   updateUserInfo,
   addBlogImages,
   saveBlog,
+  getSavedBlogs
 };
