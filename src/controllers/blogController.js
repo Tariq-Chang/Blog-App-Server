@@ -263,30 +263,63 @@ const addBlogImages = async (req, res) => {
   }
 }
 
-const saveBlog = async(req, res) => {
-  const {id} = req.params;
+const saveBlog = async (req, res) => {
   const blogId = req.body.blogId;
+  try {
+    const result = await User.find({ _id: req.user._id }, { savedBlogs: 1 });
+    const savedBlogs = result[0].savedBlogs;
 
-  if(!id){
-    return res.status(404).json("id is required")
-  }
-  
-  const blog = await Blog.findOne({_id: blogId});
+    const isAlreadyExist = savedBlogs?.find((savedBlog) => (savedBlog.toString() === blogId))
 
-  if(!blog){
-    return res.status(404).json("blog does not exist");
+    if (isAlreadyExist) {
+      return res.status(400).json({ message: "Blog already saved" })
+    }
+
+    const blog = await Blog.findOne({ _id: blogId });
+
+    if (!blog) {
+      return res.status(404).json("blog does not exist");
+    }
+    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $push: { 'savedBlogs': blog }})
+    res.status(200).json({ message: "Blog saved successfully", user: updatedUser });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message })
   }
-  const updatedUser = await User.findByIdAndUpdate({_id: id}, {$push: {'savedBlogs': blog}}, {new: true})
-  res.status(200).json({message: "Blog saved successfully", user: updatedUser});
 }
 
-const getSavedBlogs = async(req, res) => {
-  const savedBlogs = await User.find({_id: req.user._id}, "savedBlogs").populate('savedBlogs');
-  console.log(savedBlogs.savedBlogs);
-  if(!savedBlogs.length > 0){
+const getSavedBlogs = async (req, res) => {
+  try {
+    const savedBlogs = await User.find({ _id: req.user._id }, { savedBlogs: 1 }).populate('savedBlogs');
+    if (!savedBlogs.length > 0) {
       return res.status(404).json("There is no saved blog");
+    }
+    return res.status(200).json(savedBlogs)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
   }
-  return res.status(200).json(savedBlogs)
+}
+
+const removeSavedBlog = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await User.find({ _id: req.user._id }, { savedBlogs: 1 });
+    const savedBlogs = result[0].savedBlogs;
+
+    if(savedBlogs.length < 0) res.status(404).json({message:"No saved blogs found"})
+
+    const updatedBlogsIds = await savedBlogs.filter((savedBlogId) => savedBlogId.toString() !== id)
+    
+    if(updatedBlogsIds.length === savedBlogs.legnth){
+      return res.status(404).json({message:"Saved blog does not exist"})
+    }
+
+    const updatedSavedBlogs = await User.updateOne({ _id: req.user._id }, { $set: { savedBlogs: updatedBlogsIds } })
+
+    res.status(203).json({ message: "Removed from saved blogs", user: updatedSavedBlogs });
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
 }
 
 module.exports = {
@@ -301,5 +334,6 @@ module.exports = {
   updateUserInfo,
   addBlogImages,
   saveBlog,
-  getSavedBlogs
+  getSavedBlogs,
+  removeSavedBlog
 };
