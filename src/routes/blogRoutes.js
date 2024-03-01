@@ -20,7 +20,7 @@ router.post('/addBlogThumbnail',isAuthorizedUser(['admin', 'author']), upload.si
 router.post('/addBlogImages/:id',isAuthorizedUser(['admin', 'author']), upload.array('blogImages', 3), addBlogImages);
 router.get('/savedBlogs', getSavedBlogs);
 router.put('/saveBlog/:id', saveBlog);
-router.patch('/removeSavedBlog/:id', removeSavedBlog);
+router.delete('/removeSavedBlog/:id', removeSavedBlog);
 
 
 module.exports = router;
