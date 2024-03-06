@@ -1,6 +1,6 @@
 const express = require('express');
 const { isAuthorizedUser } = require('../middleware/auth');
-const {deleteBlog, createBlog, getUserBlogs, updateBlog, searchBlogByTitle, getAllBlogs, updateUserInfo, addBlogThumbnail, addBlogImages, saveBlog, getSavedBlogs, removeSavedBlog } = require('../controllers/blogController');
+const {deleteBlog, createBlog, getUserBlogs, updateBlog, searchBlogByTitle, getAllBlogs, updateUserInfo, addBlogThumbnail, addBlogImages, saveBlog, getSavedBlogs, removeSavedBlog, getBlog } = require('../controllers/blogController');
 const { addComment, deleteComment, updateComment } = require('../controllers/commentController');
 const upload = require('../middleware/upload');
 
@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.get('/', getAllBlogs);
 router.get('/myBlogs', getUserBlogs);
+router.get('/:blogId', getBlog)
 router.post('/create',upload.single('profile'), createBlog);
 router.delete('/delete/:id', isAuthorizedUser(['admin', 'author']), deleteBlog)
 router.put('/update/:id', isAuthorizedUser(['admin', 'author']), updateBlog)

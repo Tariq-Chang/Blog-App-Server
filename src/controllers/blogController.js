@@ -22,6 +22,19 @@ const getAllBlogs = async (req, res) => {
     res.status(400).json({error: error.message})
   }
 }
+
+// *************************** GET BLOG ********************************************
+const getBlog = async (req, res) => {
+  const blogId = req.params.blogId;
+  try{
+    const blog = await Blog.findOne({_id:blogId}).populate("comments");
+    res.status(200).json(blog);
+  }catch(error){
+    res.status(400).json({error: error.message})
+  }
+}
+
+
 // *************************** CREATE BLOG **********************************************
 const createBlog = async (req, res) => {
   const { title, content, thumbnail } = req.body;
@@ -324,6 +337,7 @@ const removeSavedBlog = async (req, res) => {
 
 module.exports = {
   getUserBlogs,
+  getBlog,
   createBlog,
   deleteBlog,
   updateBlog,
