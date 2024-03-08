@@ -19,8 +19,7 @@ router.get('/search', searchBlogByTitle)
 router.put('/updateUserInfo',updateUserInfo);
 router.post('/addBlogThumbnail',isAuthorizedUser(['admin', 'author']), upload.single('thumbnail'), addBlogThumbnail);
 router.post('/addBlogImages/:id',isAuthorizedUser(['admin', 'author']), upload.array('blogImages', 3), addBlogImages);
-router.get('/savedBlogs', getSavedBlogs);
-router.put('/saveBlog/:id', saveBlog);
+router.put('/saveBlog', saveBlog);
 router.delete('/removeSavedBlog/:id', removeSavedBlog);
 
 

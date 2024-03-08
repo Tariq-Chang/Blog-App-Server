@@ -10,7 +10,6 @@ const intializePassport = (passport) => {
     
     passport.use(
       new JwtStrategy(opts, async (jwt_payload, done) => {
-        console.log("jwt payload", jwt_payload)
         try {
           const user = await User.findById(jwt_payload.id); 
           if (user) {

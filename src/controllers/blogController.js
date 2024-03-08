@@ -6,7 +6,7 @@ const fs = require('fs');
 const getUserBlogs = async (req, res) => {
   try {
     // get all blogs for perticular user
-    const blogs = await Blog.find({ author: req.user.id }).populate("comments");
+    const blogs = await Blog.find({ author: req.user._id }).populate("comments");
     res.status(200).json(blogs);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -216,7 +216,7 @@ const addBlogThumbnail = async(req, res) => {
   }
 }
 
-// **************************** UPDATE PROFILE INFO *********************************
+// **************************** UPLOAD HELPER FUNCTION *********************************
 const uploadCloudinaryImages = async(file) => {
   return new Promise(async(resolve, reject) => {
     try{
@@ -231,6 +231,7 @@ const uploadCloudinaryImages = async(file) => {
   })
 }
 
+// **************************** ADD BLOG IMAGES *********************************
 const addBlogImages = async (req, res) => {
   const {id} = req.params;
   try {
@@ -257,6 +258,7 @@ const addBlogImages = async (req, res) => {
     const imageUrls = []
   
     for (const file of files) {
+      // upload images to cloudinary one by one
       const imageUrl = await uploadCloudinaryImages(file)
       imageUrls.push(imageUrl);
       try {
@@ -276,60 +278,64 @@ const addBlogImages = async (req, res) => {
   }
 }
 
+// **************************** SAVE BLOG *********************************
 const saveBlog = async (req, res) => {
   const blogId = req.body.blogId;
   try {
+    // getting savedBlogs for a logged in user
     const result = await User.find({ _id: req.user._id }, { savedBlogs: 1 });
     const savedBlogs = result[0].savedBlogs;
 
+    // check if blog already saved
     const isAlreadyExist = savedBlogs?.find((savedBlog) => (savedBlog.toString() === blogId))
-
     if (isAlreadyExist) {
       return res.status(400).json({ message: "Blog already saved" })
     }
 
+    // check blog does not exist with this id
     const blog = await Blog.findOne({ _id: blogId });
 
     if (!blog) {
       return res.status(404).json("blog does not exist");
     }
-    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $push: { 'savedBlogs': blog }})
-    res.status(200).json({ message: "Blog saved successfully", user: updatedUser });
+
+    // update the user savedBlogs field by pushing blogId to savedBlogs
+    await User.findByIdAndUpdate({ _id: req.user._id }, { $push: { 'savedBlogs': blog._id }})
+
+    // get updated blogs from user and populate those id's
+    const updatedSavedBlogs = await User.findById({_id: req.user._id}, {savedBlogs: 1}).populate('savedBlogs'); 
+    res.status(200).json({ message: "Blog saved successfully", savedBlogs:updatedSavedBlogs });
 
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 }
 
-const getSavedBlogs = async (req, res) => {
-  try {
-    const savedBlogs = await User.find({ _id: req.user._id }, { savedBlogs: 1 }).populate('savedBlogs');
-    if (!savedBlogs.length > 0) {
-      return res.status(404).json("There is no saved blog");
-    }
-    return res.status(200).json(savedBlogs)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
 
 const removeSavedBlog = async (req, res) => {
   const { id } = req.params;
   try {
+    // getting savedBlogs for a logged in user
     const result = await User.find({ _id: req.user._id }, { savedBlogs: 1 });
     const savedBlogs = result[0].savedBlogs;
 
+    // no blogs is saved
     if(savedBlogs.length < 0) res.status(404).json({message:"No saved blogs found"})
 
+    // filter to delete blog id we want to remove
     const updatedBlogsIds = await savedBlogs.filter((savedBlogId) => savedBlogId.toString() !== id)
     
-    if(updatedBlogsIds.length === savedBlogs.legnth){
+    // same length when blog does not exist with that id
+    if(updatedBlogsIds.length === savedBlogs.length){
       return res.status(404).json({message:"Saved blog does not exist"})
     }
 
-    const updatedSavedBlogs = await User.updateOne({ _id: req.user._id }, { $set: { savedBlogs: updatedBlogsIds } })
+    // update savedBlogs field to filteredId's for logged in user
+    await User.updateOne({ _id: req.user._id }, { $set: { savedBlogs: updatedBlogsIds } })
 
-    res.status(203).json({ message: "Removed from saved blogs", user: updatedSavedBlogs });
+    // get updated blogs from user and populate those id's
+    const updatedSavedBlogs = await User.findById({_id: req.user._id}, {savedBlogs: 1}).populate('savedBlogs');
+    res.status(203).json({ message: "Removed from saved blogs", savedBlogs: updatedSavedBlogs });
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -348,6 +354,5 @@ module.exports = {
   updateUserInfo,
   addBlogImages,
   saveBlog,
-  getSavedBlogs,
   removeSavedBlog
 };
