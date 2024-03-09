@@ -25,7 +25,7 @@ app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/blogs',passport.authenticate('jwt', {session:false}), blogRoutes);
 app.use('/api/v1/profile',passport.authenticate('jwt', {session:false}),profileRoutes)
-app.use('/api/v1/user',passport.authenticate('jwt', {session:false}),userRoutes)
+app.use('/api/v1/users',passport.authenticate('jwt', {session:false}),userRoutes)
 app.get('/api/v1',passport.authenticate('jwt', {session: false}), (req,res) => {
     res.send("Homepage");
 })

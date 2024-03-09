@@ -1,5 +1,16 @@
 const User = require("../models/userSchema");
 
+// ############################### GET ALL USERS #######################################
+const getAllUsers = async(req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json({users})
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+}
+
+// ############################### GET SPECIFIC USER ###################################
 const getUserById = async(req, res) => {
     const userId = req.params.id;
 
@@ -16,5 +27,6 @@ const getUserById = async(req, res) => {
 }
 
 module.exports = {
-    getUserById
+    getUserById,
+    getAllUsers
 }
