@@ -24,8 +24,8 @@ const blogSchema = new mongoose.Schema({
         type: [String],
     },
     like: {
-        type:Number,
-        default: 0
+        type:String,
+        default: "0"
     },
     comments: {
         type: [mongoose.Schema.Types.ObjectId],
