@@ -365,8 +365,8 @@ const decrementLikes = async (req, res) => {
   }
 
   try {
-    await Blog.findByIdAndUpdate(blogId, { $dec: { like: 1 } }, { like: 1 });
-    const likes = await Blog.findOne(blogId, {like: 1})
+    await Blog.findByIdAndUpdate(blogId, { $inc: { like: -1 } });
+    const likes = await Blog.findOne({_id:blogId}, {like: 1})
     res.status(200).json({ likes })
   } catch (error) {
     res.status(500).json({ error: error.message })
