@@ -15,22 +15,22 @@ const getUserBlogs = async (req, res) => {
 
 // *************************** GET ALL BLOGS ********************************************
 const getAllBlogs = async (req, res) => {
-  try{
+  try {
     const blogs = await Blog.find().populate("comments");
     res.status(200).json(blogs);
-  }catch(error){
-    res.status(400).json({error: error.message})
+  } catch (error) {
+    res.status(400).json({ error: error.message })
   }
 }
 
 // *************************** GET BLOG ********************************************
 const getBlog = async (req, res) => {
   const blogId = req.params.blogId;
-  try{
-    const blog = await Blog.findOne({_id:blogId}).populate("comments");
+  try {
+    const blog = await Blog.findOne({ _id: blogId }).populate("comments");
     res.status(200).json(blog);
-  }catch(error){
-    res.status(400).json({error: error.message})
+  } catch (error) {
+    res.status(400).json({ error: error.message })
   }
 }
 
@@ -138,94 +138,94 @@ const updateBlog = async (req, res) => {
 // **************************** SEARCH BLOG ******************************************
 const searchBlogByTitle = async (req, res) => {
   const title = req.query.title;
-  try{
+  try {
     const blogs = await Blog.find({ title: { $regex: title, $options: "i" } });
     if (!blogs) {
       res.status(400).json({ message: "Blogs do not exist" });
     }
-  
+
     res.status(200).json({ result: blogs });
-  }catch(error){
-    res.status(500).json({error: error.message})
+  } catch (error) {
+    res.status(500).json({ error: error.message })
   }
 };
 
 // **************************** UPLOAD PROFILE PHOTO *********************************
 const uploadProfilePicture = async (req, res) => {
-  
+
   try {
-    if (!req.file.path) return res.status(400).json({message:"File not selected"});
+    if (!req.file.path) return res.status(400).json({ message: "File not selected" });
 
     // upload the file on cloudinary
     const response = await cloudinary.uploader.upload(req.file.path, {
-        resource_type:"auto",
-        folder:"images"
+      resource_type: "auto",
+      folder: "images"
     });
 
     // Update the user's profile avatar field with the Cloudinary URL
-    await User.findByIdAndUpdate(req.user._id,  {"profile.avatar": response.url + `?${Date.now()}`});
+    await User.findByIdAndUpdate(req.user._id, { "profile.avatar": response.url + `?${Date.now()}` });
 
     // Delete local file on the server
     fs.unlinkSync(req.file.path);
 
     // file uploaded successfully
-    return res.status(200).json({message:"profile image uploaded successfully",img_url: response.url})
+    return res.status(200).json({ message: "profile image uploaded successfully", img_url: response.url })
   } catch (error) {
     // delete local file on the server
     fs.unlinkSync(req.file.path);
-    return res.status(404).json({error:"File deleted from the server"})
+    return res.status(404).json({ error: "File deleted from the server" })
   }
 };
 
 // **************************** UPDATE PROFILE INFO *********************************
-const updateUserInfo = async(req, res) => {
-  const {username, bio} = req.body;
+const updateUserInfo = async (req, res) => {
+  const { username, bio } = req.body;
 
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.user._id, {"username": username, "profile.bio": bio}, {new: true});
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, { "username": username, "profile.bio": bio }, { new: true });
     res.status(200).json({ success: "User updated successfully", updatedUser });
   } catch (error) {
-    res.status(500).json({error: error.message})
+    res.status(500).json({ error: error.message })
   }
 }
 
 // **************************** UPDATE PROFILE INFO *********************************
-const addBlogThumbnail = async(req, res) => {
+const addBlogThumbnail = async (req, res) => {
   try {
-    
-    if (!req.file.path) return res.status(400).json({message:"File not selected"});
+
+    if (!req.file.path) return res.status(400).json({ message: "File not selected" });
 
     // upload the file on cloudinary
     const response = await cloudinary.uploader.upload(req.file.path, {
-        resource_type:"auto",
-        folder:"thumbnails"
+      resource_type: "auto",
+      folder: "thumbnails"
     });
 
     // Update the user's profile avatar field with the Cloudinary URL
-    await Blog.findByIdAndUpdate(req.user._id,  {"thumbnail": response.url + `?${Date.now()}`});
+    await Blog.findByIdAndUpdate(req.user._id, { "thumbnail": response.url + `?${Date.now()}` });
 
     // Delete local file on the server
     fs.unlinkSync(req.file.path);
 
     // file uploaded successfully
-    return res.status(200).json({message:"thumbnail image uploaded successfully",img_url: response.url})
+    return res.status(200).json({ message: "thumbnail image uploaded successfully", img_url: response.url })
   } catch (error) {
     // delete local file on the server
     fs.unlinkSync(req.file.path);
-    return res.status(404).json({error:"File deleted from the server"})
+    return res.status(404).json({ error: "File deleted from the server" })
   }
 }
 
 // **************************** UPLOAD HELPER FUNCTION *********************************
-const uploadCloudinaryImages = async(file) => {
-  return new Promise(async(resolve, reject) => {
-    try{
+const uploadCloudinaryImages = async (file) => {
+  return new Promise(async (resolve, reject) => {
+    try {
       const response = await cloudinary.uploader.upload(file.path, {
-        resource_type:"auto",
-        folder:"BlogImages"
+        resource_type: "auto",
+        folder: "BlogImages"
       });
       resolve(response.secure_url);
-    }catch(error){
+    } catch (error) {
       reject(error);
     }
   })
@@ -233,16 +233,16 @@ const uploadCloudinaryImages = async(file) => {
 
 // **************************** ADD BLOG IMAGES *********************************
 const addBlogImages = async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
-    const blog = await Blog.findOne({_id: id});
+    const blog = await Blog.findOne({ _id: id });
 
-    if(!blog){
+    if (!blog) {
       return res.status(404).json("Blog not found");
     }
 
-     // Check if the logged in user is an author of this blog and delete it
-     if (
+    // Check if the logged in user is an author of this blog and delete it
+    if (
       blog.author.toString() !== req.user._id.toString() &&
       !req.user.role.includes("admin")
     ) {
@@ -256,13 +256,13 @@ const addBlogImages = async (req, res) => {
     if (req.files.length < 0) return res.status(400).json({ message: "File not selected" });
     const files = req.files;
     const imageUrls = []
-  
+
     for (const file of files) {
       // upload images to cloudinary one by one
       const imageUrl = await uploadCloudinaryImages(file)
       imageUrls.push(imageUrl);
       try {
-        const updatedBlog = await Blog.findByIdAndUpdate({_id:id}, { $push: {"images": imageUrl + `?${Date.now()}` } });
+        const updatedBlog = await Blog.findByIdAndUpdate({ _id: id }, { $push: { "images": imageUrl + `?${Date.now()}` } });
       } catch (error) {
         // delete local file on the server
         fs.unlinkSync(req.file.path);
@@ -300,11 +300,11 @@ const saveBlog = async (req, res) => {
     }
 
     // update the user savedBlogs field by pushing blogId to savedBlogs
-    await User.findByIdAndUpdate({ _id: req.user._id }, { $push: { 'savedBlogs': blog._id }})
+    await User.findByIdAndUpdate({ _id: req.user._id }, { $push: { 'savedBlogs': blog._id } })
 
     // get updated blogs from user and populate those id's
-    const updatedSavedBlogs = await User.findById({_id: req.user._id}, {savedBlogs: 1}).populate('savedBlogs'); 
-    res.status(200).json({ message: "Blog saved successfully", savedBlogs:updatedSavedBlogs });
+    const updatedSavedBlogs = await User.findById({ _id: req.user._id }, { savedBlogs: 1 }).populate('savedBlogs');
+    res.status(200).json({ message: "Blog saved successfully", savedBlogs: updatedSavedBlogs });
 
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -320,26 +320,59 @@ const removeSavedBlog = async (req, res) => {
     const savedBlogs = result[0].savedBlogs;
 
     // no blogs is saved
-    if(savedBlogs.length < 0) res.status(404).json({message:"No saved blogs found"})
+    if (savedBlogs.length < 0) res.status(404).json({ message: "No saved blogs found" })
 
     // filter to delete blog id we want to remove
     const updatedBlogsIds = await savedBlogs.filter((savedBlogId) => savedBlogId.toString() !== id)
-    
+
     // same length when blog does not exist with that id
-    if(updatedBlogsIds.length === savedBlogs.length){
-      return res.status(404).json({message:"Saved blog does not exist"})
+    if (updatedBlogsIds.length === savedBlogs.length) {
+      return res.status(404).json({ message: "Saved blog does not exist" })
     }
 
     // update savedBlogs field to filteredId's for logged in user
     await User.updateOne({ _id: req.user._id }, { $set: { savedBlogs: updatedBlogsIds } })
 
     // get updated blogs from user and populate those id's
-    const updatedSavedBlogs = await User.findById({_id: req.user._id}, {savedBlogs: 1}).populate('savedBlogs');
+    const updatedSavedBlogs = await User.findById({ _id: req.user._id }, { savedBlogs: 1 }).populate('savedBlogs');
     res.status(203).json({ message: "Removed from saved blogs", savedBlogs: updatedSavedBlogs });
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 }
+
+const incrementLikes = async (req, res) => {
+  const blogId = req.params.blogId;
+
+  if (!blogId) {
+    return res.status(404).message("Blog does not exist");
+  }
+
+  try {
+    await Blog.findByIdAndUpdate(blogId, { $inc: { like: 1 } }, { like: 1 });
+    const likes = await Blog.findOne({_id:blogId}, {like: 1})
+    res.status(200).json({ likes: likes })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+const decrementLikes = async (req, res) => {
+  const blogId = req.params.blogId;
+
+  if (!blogId) {
+    return res.status(404).message("Blog does not exist");
+  }
+
+  try {
+    await Blog.findByIdAndUpdate(blogId, { $dec: { like: 1 } }, { like: 1 });
+    const likes = await Blog.findOne(blogId, {like: 1})
+    res.status(200).json({ likes })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
 
 module.exports = {
   getUserBlogs,
@@ -347,6 +380,8 @@ module.exports = {
   createBlog,
   deleteBlog,
   updateBlog,
+  incrementLikes,
+  decrementLikes,
   searchBlogByTitle,
   uploadProfilePicture,
   getAllBlogs,
