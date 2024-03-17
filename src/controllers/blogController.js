@@ -349,9 +349,25 @@ const incrementLikes = async (req, res) => {
   }
 
   try {
-    await Blog.findByIdAndUpdate(blogId, { $inc: { like: 1 } }, { like: 1 });
+    const {likedBlogs} = await User.findOne(req.user._id, {likedBlogs: 1});
+
+    // Get blog by ID
+    const blog = await Blog.findOne({_id: blogId});
+
+    // Check if blog is already liked
+    if(likedBlogs.includes(blog._id)){
+      return res.status(400).json({message: "Blog already liked"});
+    }
+    // Update like count
+    await Blog.findByIdAndUpdate(blogId, { $inc: { like: 1} });
+
+    // update user likedBlogs array
+    await User.findByIdAndUpdate({_id:req.user._id}, {$push: {likedBlogs: blog._id} })
+    const updatedUser = await User.findOne({_id: req.user._id})
+    console.log("updatedUser", updatedUser);
+    // find blog which was update again return only like field
     const likes = await Blog.findOne({_id:blogId}, {like: 1})
-    res.status(200).json({ likes: likes })
+    res.status(200).json({ likes, updatedUser })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -365,9 +381,25 @@ const decrementLikes = async (req, res) => {
   }
 
   try {
-    await Blog.findByIdAndUpdate(blogId, { $inc: { like: -1 } });
+    const {likedBlogs} = await User.findOne(req.user._id, {likedBlogs: 1});
+
+    // Get blog by ID
+    const blog = await Blog.findOne({_id: blogId});
+
+    // Check if blog is liked
+    if(!likedBlogs.includes(blog._id)){
+      return res.status(400).json({message: "Blog is not liked"});
+    }
+
+    // Update like count
+    await Blog.findByIdAndUpdate(blogId, { $inc: { like: -1} });
+
+    // update user likedBlogs array
+    await User.findByIdAndUpdate(req.user._id, {$pull: {likedBlogs: blog._id} })
+    const updatedUser = await User.findOne({_id: req.user._id});
+    // find blog which was update again return only like field
     const likes = await Blog.findOne({_id:blogId}, {like: 1})
-    res.status(200).json({ likes })
+    res.status(200).json({ likes: likes, updatedUser })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

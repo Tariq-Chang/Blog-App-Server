@@ -36,6 +36,10 @@ const userSchema = mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Blog'
     },
+    likedBlogs: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Blog'
+    },
 }, {timestamps: true})
 
 const User = mongoose.model('User',userSchema);

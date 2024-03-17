@@ -26,7 +26,26 @@ const getUserById = async(req, res) => {
     }
 }
 
+// ############################### GET Liked Blogs ###################################
+const getLikedBlogs = async(req, res) => {
+
+    if(!blogId){
+        return res.status(400).json({message:"blogId is required"})
+    }
+
+    try {
+        const user = await User.findOne({_id: req.user._id});
+        console.log("user", user);
+        return res.status(200).json({likedBlogs: user})
+    } catch (error) {
+        return res.status(500).json({message: "Failed to get the liked blogs"})
+    }
+}
+
+
+
 module.exports = {
     getUserById,
-    getAllUsers
+    getAllUsers,
+    getLikedBlogs
 }
