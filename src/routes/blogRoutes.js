@@ -8,11 +8,11 @@ const router = express.Router();
 
 router.get('/', getAllBlogs);
 router.get('/myBlogs', getUserBlogs);
-router.get('/:blogId', getBlog)
 router.post('/create',upload.single('profile'), createBlog);
 router.delete('/delete/:id', isAuthorizedUser(['admin', 'author']), deleteBlog)
 router.put('/update/:id', isAuthorizedUser(['admin', 'author']), updateBlog)
-router.get('/search', searchBlogByTitle)
+router.get('/:blogId([0-9a-fA-F]{24})', getBlog)
+router.get('/search/', searchBlogByTitle)
 router.put('/updateUserInfo',updateUserInfo);
 router.post('/addBlogThumbnail',isAuthorizedUser(['admin', 'author']), upload.single('thumbnail'), addBlogThumbnail);
 router.post('/addBlogImages/:id',isAuthorizedUser(['admin', 'author']), upload.array('blogImages', 3), addBlogImages);
